@@ -1,7 +1,7 @@
 from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from ..utils.validators import is_valid_email, is_valid_username, is_strong_password
-from ..utils.jwt_helper import generate_token
+from ..utils.jwt_helper import generate_token, generate_reset_password_token, decode_reset_password_token
 from ..models.user import User
 from ..extensions import db
 import bcrypt
@@ -52,3 +52,29 @@ def verify_and_upgrade_password(user, password):
             db.session.commit()
             return True
     return False
+
+
+def request_password_reset(email):
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {"message": "Se o email existir, enviaremos instruções"}, 200
+    token = generate_reset_password_token(user.id)
+    reset_link = f"http://localhost:5000/auth/reset-password?token={token}"
+    print(f"🔗 Link de redefinição (simulado): {reset_link}")
+    return {"message": "Se o e-mail existir, enviaremos instruções."}, 200
+
+
+def reset_user_password(token, new_password):
+    try:
+        decoded_token = decode_reset_password_token(token)
+        user_id = decoded_token.get("sub")
+        user = User.query.get(user_id)
+        if not user:
+            return {"message": "Usuário não encontrado."}, 404
+        # Atualiza a senha com bcrypt
+        new_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        user.password_hash = new_hash
+        db.session.commit()
+        return {"message": "Senha redefinida com sucesso!"}, 200
+    except Exception as e:
+        return {"message": f"Erro ao redefinir a senha: {str(e)}"}, 400

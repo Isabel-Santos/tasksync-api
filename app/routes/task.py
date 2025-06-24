@@ -10,7 +10,7 @@ bp = Blueprint('task', __name__, url_prefix='/tasks')
 @jwt_required()
 def add_task():
     user_id = (get_jwt_identity())
-    if not isinstance(user_id, int):  # Garantindo que o user_id seja um número inteiro
+    if not isinstance(user_id, str):  # Garantindo que o user_id seja um número inteiro
         return jsonify({'message': 'ID do usuário inválido no token'}), 400
     return create_task(request.get_json(), user_id)
 
@@ -20,7 +20,7 @@ def add_task():
 @cross_origin(origins="http://localhost:3000", supports_credentials=True)
 def list_tasks():
     user_id = get_jwt_identity()
-    if not isinstance(user_id, int):  # Garantindo que o user_id seja um número inteiro
+    if not isinstance(user_id, str):  # Garantindo que o user_id seja um número inteiro
         return jsonify({'message': 'ID do usuário inválido no token'}), 400
     tasks = get_all_tasks(user_id)
     if not tasks:
@@ -33,7 +33,7 @@ def list_tasks():
 @cross_origin(origins="http://localhost:3000", supports_credentials=True)
 def get_task(task_id):
     user_id = get_jwt_identity()
-    if not isinstance(user_id, int):  # Garantindo que o user_id seja um número inteiro
+    if not isinstance(user_id, str):  # Garantindo que o user_id seja um número inteiro
         return jsonify({'message': 'ID do usuário inválido no token'}), 400
     task = get_task_by_id(user_id, task_id)
     if not task:

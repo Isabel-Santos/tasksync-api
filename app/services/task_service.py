@@ -3,28 +3,14 @@ from ..models.task import Task
 from ..extensions import db, cache
 from flask_jwt_extended import get_jwt_identity
 from ..services.log_service import create_log
+from ..utils.validators import is_valid_task_data
 import json
-
-
-ALLOWED_STATUSES = {"A fazer", "Em andamento", "Concluída"}
-
-
-def validate_task_data(title, description, status):
-    if not isinstance(title, str) or not isinstance(status, str):
-        raise ValueError("Título e status devem ser do tipo string!")
-    if len(title) < 5:
-        raise ValueError("O título deve ter pelo menos 5 caracteres!")
-    if not description or len(description) < 10:
-        raise ValueError("A descrição deve ter pelo menos 10 caracteres!")
-    if status not in ALLOWED_STATUSES:
-        raise ValueError(f"Status inválido. Use um dos valores permitidos: {', '.join(ALLOWED_STATUSES)}.")
-    return True
 
 
 def create_task(data, user_id):
     try:
         status = data.get('status', 'A fazer')
-        validate_task_data(data['title'], data.get('description', ''), status)
+        is_valid_task_data(data['title'], data.get('description', ''), status)
         new_task = Task(title=data['title'], description=data.get('description', ''), status=data.get('status', 'A fazer'), user_id=user_id)
         db.session.add(new_task)
         db.session.commit()
@@ -62,18 +48,25 @@ def update_task(task_id, data, user_id):
     task = Task.query.filter_by(id=task_id, user_id=user_id).first()
     if not task:
         return jsonify({'message': 'Tarefa não encontrada'}), 404
-    task.title = data.get('title', task.title)
-    task.description = data.get('description', task.description)
-    task.status = data.get('status', task.status)
+    title = data.get('title', task.title)
+    description = data.get('description', task.description)
+    status = data.get('status', task.status)
     try:
+        is_valid_task_data(title, description, status)
+        task.title = title
+        task.description = description
+        task.status = status
         db.session.commit()
-    except Exception as e:
+        create_log(f"Tarefa atualizada: {task.title}", user_id)
+        cache.delete(f"tasks:{user_id}")
+        cache.delete(f"task:{user_id}:{task_id}")
+        return jsonify({'message': 'Tarefa atualizada com sucesso', 'task': task.to_dict()}), 200 
+    except ValueError as ve:
+        return jsonify({'message': str(ve)}),400
+    except Exception:
         db.session.rollback()
-        return jsonify({'message': 'Erro ao salvar as alterações'})
-    create_log(f"Tarefa atualizada: {task.title}", user_id)
-    cache.delete(f"tasks:{user_id}")
-    cache.delete(f"task:{user_id}:{task_id}")
-    return jsonify({'message': 'Tarefa atualizada'})
+        return jsonify({'message': 'Erro interno ao atualizar a tarefa'}), 500
+
 
 
 def delete_task(task_id, user_id):

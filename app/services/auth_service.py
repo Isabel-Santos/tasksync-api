@@ -26,7 +26,7 @@ def register_user(data):
     if not is_valid_email(email):
         return {'message': 'Email inválido!'}, 400    
     if not is_strong_password(password):
-        return {'message': 'A senha deve ter no mínimo 8 caracteres.'}, 400
+        return {'message': 'A senha deve conter no mínimo 8 caracteres, com pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.'}, 400
     # Verificação de existência de email
     if User.query.filter_by(email=data['email']).first():
         return {'message': 'Email já cadastrado!'}, 409

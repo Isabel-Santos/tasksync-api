@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, url_for, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token ,jwt_required, get_jwt_identity, verify_jwt_in_request
 from .. import db, oauth
 from ..models.user import User
-from ..services.auth_service import authenticate_user, register_user
+from ..services.auth_service import authenticate_user, register_user, request_password_reset, reset_user_password
 from flask_cors import cross_origin
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -86,6 +86,23 @@ def debug_token():
     except Exception as e:
         return jsonify({"valid": False, "error": str(e)})
 
+@bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({"message": "E-mail é obrigatório"}), 400
+    response, status = request_password_reset(email)
+    return jsonify(response), status
+
+@bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json()
+    token = request.args.get("token")
+    new_password = data.get("new_password")
+    if not token or not new_password:
+        return jsonify({"message": "Token e nova senha são obrigatórios."}), 400
+    return reset_user_password(token, new_password)
 
 # # Rota para testar o token JWT (opcional, para depuração)
 # @bp.route('/login/test', methods=['GET'])
@@ -119,14 +136,12 @@ def login_with_google():
 def google_callback():
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.parse_id_token(token)
-    
     # Verifica se o usuário existe no banco de dados
     user = User.query.filter_by(email=user_info['email']).first()
     if not user:
         user = User(username=user_info['name'], email=user_info['email'])
         db.session.add(user)
         db.session.commit()
-    
     # Gera o token JWT para o usuário autenticado via Google
     jwt_token = create_access_token(identity=str(user.id))  # Convertendo o ID para string
     return jsonify({'token': jwt_token})

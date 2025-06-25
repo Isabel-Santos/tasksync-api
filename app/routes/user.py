@@ -27,15 +27,12 @@ def get_user(user_id):
 
 # Atualizar um usuário
 @bp.route('/users/<int:user_id>', methods=['PUT'])
-def update_user_route(user_id):
+def update_user(user_id):
     data = request.get_json()
-
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-
     user = update_user(user_id, username, email, password)
-
     if user:
         return jsonify({'id': user.id, 'username': user.username, 'email': user.email}), 200
     return jsonify({'error': 'Usuário não encontrado!'}), 404

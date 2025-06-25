@@ -1,4 +1,5 @@
 import re
+from ..models.user import User
 
 ALLOWED_STATUSES = {"A fazer", "Em andamento", "Concluída"}
 
@@ -19,6 +20,11 @@ def is_strong_password(password):
     has_digit = re.search(r"[0-9]", password)
     has_special = re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     return all([has_upper, has_lower, has_digit, has_special])
+
+def is_unique_email(email):
+    if not is_valid_email(email):
+        return False
+    return User.query.filter_by(email=email).first() is None
 
 def is_valid_task_data(title, description, status):
     if not isinstance(title, str) or not isinstance(status, str):

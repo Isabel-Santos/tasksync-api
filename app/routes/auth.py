@@ -8,7 +8,7 @@ from flask_cors import cross_origin
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-# Rota de login (autenticação com JWT) FUNCIONAL
+# Rota de login (autenticação com JWT) FUNCIONAL ANTIGA
 # @bp.route('/login', methods=['POST'])
 # @cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
 # def login():
@@ -29,11 +29,13 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def login():
     try:
         data = request.get_json()
+        print(f"Login tentativa para email: {data.get('email')}")
         # 1. Verificação de dados obrigatórios
         if not data or 'email' not in data or 'password' not in data:
             return jsonify({'message': 'Email e senha são obrigatórios!'}), 400
         # 2. Autenticar usuário via service
         response, status_code = authenticate_user(data['email'], data['password'])
+        print(f"authenticate_user retornou status {status_code} e resposta {response}")
         if status_code == 200:
             user_id = response['user_id']
             # 3. Gerar access token (curto prazo) e refresh token (longo prazo)
@@ -76,7 +78,7 @@ def refresh():
     new_access_token = create_access_token(identity=current_user)
     return jsonify({'access_token': new_access_token}), 200
 
-
+# Rota de validadação do token
 @bp.route('/debug', methods=['GET'])
 def debug_token():
     try:
@@ -86,6 +88,7 @@ def debug_token():
     except Exception as e:
         return jsonify({"valid": False, "error": str(e)})
 
+# Rota de redefinição de senha
 @bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.get_json()
@@ -95,6 +98,7 @@ def forgot_password():
     response, status = request_password_reset(email)
     return jsonify(response), status
 
+# Rota de preenchimento de senha nova
 @bp.route("/reset-password", methods=["POST"])
 def reset_password():
     data = request.get_json()
@@ -103,21 +107,6 @@ def reset_password():
     if not token or not new_password:
         return jsonify({"message": "Token e nova senha são obrigatórios."}), 400
     return reset_user_password(token, new_password)
-
-# # Rota para testar o token JWT (opcional, para depuração)
-# @bp.route('/login/test', methods=['GET'])
-# def test_token():
-#     token = request.headers.get('Authorization')
-#     if token:
-#         try:
-#             decoded_token = decode_token(token.split()[1], allow_expired=True)  # Extrai o token do cabeçalho Authorization
-#             print("Token decodificado:", decoded_token)  # Log do token decodificado
-#             return jsonify({"message": "Token válido", "decoded_token": decoded_token}), 200
-#         except Exception as e:
-#             print("Erro ao decodificar o token:", e)
-#             return jsonify({"message": "Token inválido!"}), 401
-#     else:
-#         return jsonify({"message": "Token não fornecido!"}), 400
 
 # Rota protegida para testar a autenticação com JWT
 @bp.route('/protected', methods=['GET'])
@@ -145,3 +134,19 @@ def google_callback():
     # Gera o token JWT para o usuário autenticado via Google
     jwt_token = create_access_token(identity=str(user.id))  # Convertendo o ID para string
     return jsonify({'token': jwt_token})
+
+
+# # Rota para testar o token JWT (opcional, para depuração)
+# @bp.route('/login/test', methods=['GET'])
+# def test_token():
+#     token = request.headers.get('Authorization')
+#     if token:
+#         try:
+#             decoded_token = decode_token(token.split()[1], allow_expired=True)  # Extrai o token do cabeçalho Authorization
+#             print("Token decodificado:", decoded_token)  # Log do token decodificado
+#             return jsonify({"message": "Token válido", "decoded_token": decoded_token}), 200
+#         except Exception as e:
+#             print("Erro ao decodificar o token:", e)
+#             return jsonify({"message": "Token inválido!"}), 401
+#     else:
+#         return jsonify({"message": "Token não fornecido!"}), 400

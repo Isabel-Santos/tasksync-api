@@ -1,6 +1,6 @@
 from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from ..utils.validators import is_valid_email, is_valid_username, is_strong_password
+from ..utils.validators import is_valid_email, is_valid_username, is_strong_password, is_unique_email
 from ..utils.jwt_helper import generate_token, generate_reset_password_token, decode_reset_password_token
 from ..models.user import User
 from ..extensions import db
@@ -28,7 +28,7 @@ def register_user(data):
     if not is_strong_password(password):
         return {'message': 'A senha deve conter no mínimo 8 caracteres, com pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.'}, 400
     # Verificação de existência de email
-    if User.query.filter_by(email=data['email']).first():
+    if not is_unique_email(email):
         return {'message': 'Email já cadastrado!'}, 409
     # Criação de usuário
     bcrypt_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

@@ -36,3 +36,7 @@ def is_valid_task_data(title, description, status):
     if status not in ALLOWED_STATUSES:
         raise ValueError(f"Status inválido. Use um dos valores permitidos: {', '.join(ALLOWED_STATUSES)}.")
     return True
+
+def is_unique_email(email, user_id=None):
+    user = User.query.filter_by(email=email).first()
+    return not user or (user_id is not None and user.id == user_id)

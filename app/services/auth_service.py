@@ -56,7 +56,7 @@ def register_user(data):
             return {'message': 'Email já cadastrado!'}, 409
         # Criação de usuário
         bcrypt_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    #   hashed_password = generate_password_hash(data['password'], method="pbkdf2:sha256")
+        # hashed_password = generate_password_hash(data['password'], method="pbkdf2:sha256")
         new_user = User(email=data['email'], username=data['username'], password_hash=bcrypt_hash)
         db.session.add(new_user)
         db.session.commit()
@@ -65,6 +65,7 @@ def register_user(data):
     except Exception as e:
         print(f"[REGISTER ERROR] {e}")
         return {'message': 'Erro interno ao cadastrar usuário.'}, 500
+
 
 def request_password_reset(email):
     user = User.query.filter_by(email=email).first()

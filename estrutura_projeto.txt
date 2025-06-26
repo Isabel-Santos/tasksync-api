@@ -25,9 +25,10 @@ projeto-tasksync/
 │   │   │   ├── __init__.py          # Inicializa o módulo de utilitários
 │   │   │   ├── validators.py        # Validações de entrada de dados
 │   │   │   └── jwt_helper.py        # Geração e validação de tokens JWT
+│   │   ├── static/                  # elementos estáticos
+│   │   │   └── status.html          # página de status do servidor
 │   │   └── extensions.py            # Inicialização de extensões (e.g., SQLAlchemy, JWT)
 │   ├── .env                       # Configurações do Flask
-│   ├── venv                       
 │   ├── requirements.txt           # Dependências do backend
 │   └── run.py                     # Arquivo principal para iniciar o backend
 │

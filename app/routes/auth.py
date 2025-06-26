@@ -5,6 +5,7 @@ from .. import db, oauth
 from ..models.user import User
 from ..services.auth_service import authenticate_user, register_user, request_password_reset, reset_user_password
 from flask_cors import cross_origin
+from ..extensions import limiter
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -25,6 +26,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 # Rota de login refatorada
 @bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute") 
 @cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
 def login():
     try:
@@ -60,6 +62,7 @@ def login():
 
 # Rota de cadastro de usuário
 @bp.route('/signup', methods=['POST'])
+@limiter.limit("5 per minute")
 def signup():
     try:
         data = request.get_json()

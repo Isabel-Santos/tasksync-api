@@ -70,7 +70,7 @@ python run.py
 ```
 Isso vai iniciar o servidor Flask e a API estará acessível via HTTPS em:
  * https://127.0.0.1:5000/ 
- * https://<seu-ip-local>:5000
+ * https://seu-ip-local:5000
 
 
 ## 🧪 4. Testando a API com Postman

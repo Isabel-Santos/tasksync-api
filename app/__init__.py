@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, app
 from flask_cors import CORS
 from flask_login import LoginManager
-from .extensions import db, jwt, oauth, cache
+from .extensions import db, jwt, oauth, cache, mail
 from .config import Config
 from .routes import auth, user, task, log
 from dotenv import load_dotenv
@@ -36,8 +36,11 @@ def create_database_if_not_exists(app):
 def create_app():
     app = Flask(__name__)
 
-    CORS(app, origins=["http://localhost:3000"], allow_headers=["Content-Type", "Authorization"], supports_credentials=True)
-
+    # CORS(app, resources = {r"/*": {"origins": "https://localhost:3000"}}, allow_headers=["Content-Type", "Authorization", "x-user-id"], supports_credentials=True)
+    CORS(app,
+        resources={r"/*": {"origins": "https://localhost:3000"}},
+        supports_credentials=True)
+    
     print(f"🔐 DEBUG - JWT_SECRET_KEY na verificação: {os.getenv('JWT_SECRET_KEY')}")
     print(f"🧪 DEBUG - Config carregada: {Config.JWT_SECRET_KEY}")
 
@@ -47,6 +50,7 @@ def create_app():
     jwt.init_app(app)
     cache.init_app(app)
     oauth.init_app(app)
+    mail.init_app(app)
 
     @jwt.unauthorized_loader
     def unauthorized_response(callback):

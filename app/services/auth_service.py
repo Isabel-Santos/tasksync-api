@@ -1,9 +1,10 @@
-from flask import jsonify
+from flask import jsonify, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_mail import Message
 from ..utils.validators import is_valid_email, is_valid_username, is_strong_password, is_unique_email
 from ..utils.jwt_helper import generate_token, generate_reset_password_token, decode_reset_password_token
 from ..models.user import User
-from ..extensions import db
+from ..extensions import db, mail
 import bcrypt
 
 
@@ -67,14 +68,50 @@ def register_user(data):
         return {'message': 'Erro interno ao cadastrar usuário.'}, 500
 
 
+# def request_password_reset(email):
+#     user = User.query.filter_by(email=email).first()
+#     if not user:
+#         return {"message": "Se o email existir, enviaremos instruções"}, 200
+#     token = generate_reset_password_token(user.id)
+#     reset_link = f"http://localhost:5000/auth/reset-password?token={token}"
+#     print(f"🔗 Link de redefinição (simulado): {reset_link}")
+#     return {"message": "Se o e-mail existir, enviaremos instruções."}, 200
 def request_password_reset(email):
     user = User.query.filter_by(email=email).first()
+    # Sempre responde a mesma coisa, mesmo que email não exista (por segurança)
+    success_msg = {"message": "Se o e-mail existir, enviaremos instruções."}, 200
     if not user:
-        return {"message": "Se o email existir, enviaremos instruções"}, 200
+        return success_msg
+    # Gera token e link
     token = generate_reset_password_token(user.id)
-    reset_link = f"http://localhost:5000/auth/reset-password?token={token}"
-    print(f"🔗 Link de redefinição (simulado): {reset_link}")
-    return {"message": "Se o e-mail existir, enviaremos instruções."}, 200
+    frontend_url = current_app.config.get("FRONTEND_URL", "http://localhost:3000")
+    reset_link = f"{frontend_url}/reset-password?token={token}"
+    # Corpo do e-mail
+    email_subject = "Redefinição de Senha - TaskSync"
+    email_body = f"""
+Olá {user.username},
+
+Recebemos um pedido para redefinir sua senha.
+Clique no link abaixo para escolher uma nova senha (válido por 15 minutos):
+
+{reset_link}
+
+Se você não solicitou isso, pode ignorar este e-mail.
+
+Atenciosamente,
+Equipe TaskSync
+"""
+    try:
+        msg = Message(
+            subject=email_subject,
+            recipients=[user.email],
+            body=email_body
+        )
+        mail.send(msg)
+        return success_msg
+    except Exception as e:
+        print(f"[ERRO] Falha ao enviar e-mail: {str(e)}")
+        return {"message": "Erro ao enviar o e-mail. Tente novamente mais tarde."}, 500
 
 
 def reset_user_password(token, new_password):

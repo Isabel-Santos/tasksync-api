@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, app
 from flask_cors import CORS
 from flask_login import LoginManager
-from .extensions import db, jwt, oauth, cache, mail
+from .extensions import db, jwt, oauth, cache, mail, limiter
 from .config import Config
 from .routes import auth, user, task, log
 from dotenv import load_dotenv
@@ -51,6 +51,7 @@ def create_app():
     cache.init_app(app)
     oauth.init_app(app)
     mail.init_app(app)
+    limiter.init_app(app)
 
     @jwt.unauthorized_loader
     def unauthorized_response(callback):

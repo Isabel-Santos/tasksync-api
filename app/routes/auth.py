@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, url_for, current_app
 # from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token ,jwt_required, get_jwt_identity, verify_jwt_in_request
-from .. import db, oauth
+from .. import db, oauth, limiter
 from ..models.user import User
 from ..services.auth_service import authenticate_user, register_user, request_password_reset, reset_user_password
 from flask_cors import cross_origin
@@ -26,6 +26,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 # Rota de login refatorada
 @bp.route('/login', methods=['POST'])
 @cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
+@limiter.limit("5 per minute")
 def login():
     try:
         data = request.get_json()
@@ -92,6 +93,7 @@ def debug_token():
 
 # Rota de redefinição de senha
 @bp.route('/forgot-password', methods=['POST'])
+@limiter.limit("3 per minute")
 def forgot_password():
     data = request.get_json()
     email = data.get('email')
@@ -102,6 +104,7 @@ def forgot_password():
 
 # Rota de preenchimento de senha nova
 @bp.route("/reset-password", methods=["POST"])
+@limiter.limit("5 per minute")
 def reset_password():
     data = request.get_json()
     token = request.args.get("token")

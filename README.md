@@ -8,7 +8,6 @@
 Antes de iniciar, certifique-se de ter os seguintes softwares instalados:
 
 - Python 3.x
-- Node.js 16+ e npm 8+
 - Git para clonagem do repositório
 - Flask + Flask-JWT-Extended
 - PostgreSQL + SQLAlchemy
@@ -115,11 +114,11 @@ Body (JSON):
   "password": "SenhaForte@123"
 }
 ```
-### * Outros Endpoints
+* ### Outros Endpoints
 * GET /tasks – Lista tarefas (protegida com JWT)
 * POST /tasks – Cria nova tarefa (protegida com JWT)
 
-### * Para acessar rotas protegidas:
+* ###  Para acessar rotas protegidas:
 ##### 1. Copie o access_token retornado no login
 ##### 2. Use o token de acesso no parâmetro **Authorization**
 ##### 3. Cole <*acess-token*> no campo Token

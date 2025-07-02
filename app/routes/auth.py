@@ -42,7 +42,7 @@ def login():
             access_token = create_access_token(identity=str(user_id))
             refresh_token = create_refresh_token(identity=str(user_id))
             # 4. Retornar tokens e dados básicos do usuário
-            return jsonify({
+            rep = ({
                 'message': 'Login realizado com sucesso!',
                 'access_token': access_token,
                 'refresh_token': refresh_token,
@@ -51,7 +51,9 @@ def login():
                     'username': response['username'],
                     'email': response['email']
                 }
-            }), 200
+            })
+            print(rep)
+            return jsonify(rep), 200
         # 5. Caso falhe na autenticação
         return jsonify(response), status_code
     except Exception as e:

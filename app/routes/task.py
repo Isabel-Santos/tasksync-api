@@ -17,7 +17,7 @@ def add_task():
 
 @bp.route('/list', methods=['GET'], strict_slashes=False)
 @jwt_required()
-@cross_origin(origins="http://localhost:3000", supports_credentials=True)
+@cross_origin(origins="https://localhost:3000", supports_credentials=True)
 def list_tasks():
     user_id = get_jwt_identity()
     if not isinstance(user_id, str):  # Garantindo que o user_id seja um número string
@@ -30,7 +30,7 @@ def list_tasks():
 
 @bp.route('/get/<int:task_id>', methods=['GET'])
 @jwt_required()
-@cross_origin(origins="http://localhost:3000", supports_credentials=True)
+@cross_origin(origins="https://localhost:3000", supports_credentials=True)
 def get_task(task_id):
     user_id = get_jwt_identity()
     if not isinstance(user_id, str):  # Garantindo que o user_id seja um número inteiro
@@ -43,7 +43,7 @@ def get_task(task_id):
 
 @bp.route('/<int:task_id>', methods=['PUT'])
 @jwt_required()
-@cross_origin(origins="http://localhost:3000", supports_credentials=True)
+@cross_origin(origins="https://localhost:3000", supports_credentials=True)
 def edit_task(task_id):
     user_id = get_jwt_identity()
     return update_task(task_id, request.get_json(), user_id)
@@ -51,7 +51,7 @@ def edit_task(task_id):
 
 @bp.route('/<int:task_id>/remove', methods=['DELETE'])
 @jwt_required()
-@cross_origin(origins="http://localhost:3000", supports_credentials=True)
+@cross_origin(origins="https://localhost:3000", supports_credentials=True)
 def remove_task(task_id):
     user_id = get_jwt_identity()
     return delete_task(task_id, user_id)
@@ -59,7 +59,7 @@ def remove_task(task_id):
 
 # @bp.route('/<int:user_id>/<int:task_id>', methods=['GET'])
 # @jwt_required()
-# @cross_origin(origins="http://localhost:3000", supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+# @cross_origin(origins="https://localhost:3000", supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
 # def get_task(user_id, task_id):
 #     token_user_id = get_jwt_identity()  # Obtém o user_id do token JWT
 #     print(f"User ID do token JWT: {token_user_id}")  # Adiciona log para verificar o user_id do token

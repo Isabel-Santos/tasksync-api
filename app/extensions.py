@@ -23,7 +23,7 @@ mail = Mail()
 def get_user_or_ip():
     from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
     try:
-        verify_jwt_in_request(True)
+        verify_jwt_in_request(optional=True)
         user = get_jwt_identity()
         if user:
             return f"user:{user}"

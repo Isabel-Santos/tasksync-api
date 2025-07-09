@@ -84,7 +84,7 @@ def request_password_reset(email):
         return success_msg
     # Gera token e link
     token = generate_reset_password_token(user.id)
-    frontend_url = current_app.config.get("FRONTEND_URL", "http://localhost:3000")
+    frontend_url = current_app.config.get("FRONTEND_URL", "https://localhost:3000")
     reset_link = f"{frontend_url}/reset-password?token={token}"
     # Corpo do e-mail
     email_subject = "Redefinição de Senha - TaskSync"
@@ -128,3 +128,5 @@ def reset_user_password(token, new_password):
         return {"message": "Senha redefinida com sucesso!"}, 200
     except Exception as e:
         return {"message": f"Erro ao redefinir a senha: {str(e)}"}, 400
+    
+    

@@ -9,7 +9,7 @@ bp = Blueprint('task', __name__, url_prefix='/tasks')
 @bp.route('/add', methods=['POST'])
 @jwt_required()
 def add_task():
-    user_id = (get_jwt_identity())
+    user_id = str(get_jwt_identity())
     if not isinstance(user_id, str):  # Garantindo que o user_id seja um número string
         return jsonify({'message': 'ID do usuário inválido no token'}), 400
     return create_task(request.get_json(), user_id)

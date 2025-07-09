@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, app
+from flask import Flask, jsonify, app, request
 from flask_cors import CORS
 from flask_login import LoginManager
 from .extensions import db, jwt, oauth, cache, mail, limiter
@@ -35,16 +35,18 @@ def create_database_if_not_exists(app):
 
 def create_app():
     app = Flask(__name__)
+    app.config.from_object(Config)
 
-    # CORS(app, resources = {r"/*": {"origins": "https://localhost:3000"}}, allow_headers=["Content-Type", "Authorization", "x-user-id"], supports_credentials=True)
     CORS(app,
-        resources={r"/*": {"origins": "https://localhost:3000"}},
-        supports_credentials=True)
+        origins=["https://localhost:3000"],
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-User-ID"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    
+    print("✅✅✅ O SERVIDOR ESTÁ RODANDO COM A CONFIGURAÇÃO CORS CORRETA! ✅✅✅")
     
     print(f"🔐 DEBUG - JWT_SECRET_KEY na verificação: {os.getenv('JWT_SECRET_KEY')}")
     print(f"🧪 DEBUG - Config carregada: {Config.JWT_SECRET_KEY}")
-
-    app.config.from_object(Config)
 
     db.init_app(app)
     jwt.init_app(app)
@@ -55,26 +57,20 @@ def create_app():
 
     @jwt.unauthorized_loader
     def unauthorized_response(callback):
-        return jsonify({
-            "message": "Token não fornecido ou inválido!"
-        }), 401
+        return jsonify({"message": "Token não fornecido ou inválido!"}), 401
 
     @jwt.invalid_token_loader
     def invalid_token_response(error):
-        return jsonify({
-            "message": "Token inválido!"
-        }), 401
+        return jsonify({"message": "Token inválido!"}), 401
 
     @jwt.expired_token_loader
     def expired_token_response(error):
-        return jsonify({
-            "message": "Token expirado!"
-        }), 401
+        return jsonify({"message": "Token expirado!"}), 401
     
-    @jwt.invalid_token_loader
-    def invalid_token_callback(error):
-        print(f"Invalid token error: {error}")
-        return jsonify({"message": "Token inválido!"}), 401
+    # @jwt.invalid_token_loader
+    # def invalid_token_callback(error):
+    #     print(f"Invalid token error: {error}")
+    #     return jsonify({"message": "Token inválido!"}), 401
     
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -86,13 +82,27 @@ def create_app():
 
     with app.app_context():
         create_database_if_not_exists(app)
+        db.create_all()
 
     app.register_blueprint(auth)
     app.register_blueprint(user)
     app.register_blueprint(task)
     app.register_blueprint(log)
 
-    with app.app_context():
-        db.create_all()
+
+    # @app.after_request
+    # def apply_cors_headers(response):
+    #     origin = request.headers.get('Origin')
+    #     allowed_origin = "https://localhost:3000"
+
+    #     if origin == "https://localhost:3000":
+    #         response.headers["Access-Control-Allow-Origin"] = origin
+    #         response.headers["Access-Control-Allow-Credentials"] = "true"
+    #         response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-User-ID"
+    #         response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+
+    #     print(f"🔍 Access-Control-Allow-Origin: {response.headers.get('Access-Control-Allow-Origin')}")
+    #     print(f"🔍 Access-Control-Allow-Credentials: {response.headers.get('Access-Control-Allow-Credentials')}")
+    #     return response
 
     return app

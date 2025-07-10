@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from .extensions import db, jwt, oauth, cache, mail, limiter
 from .config import Config
 from .routes import auth, user, task, log
+from .routes.task_share import bp as task_share
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2 import sql
@@ -88,6 +89,7 @@ def create_app():
     app.register_blueprint(user)
     app.register_blueprint(task)
     app.register_blueprint(log)
+    app.register_blueprint(task_share)
 
 
     # @app.after_request

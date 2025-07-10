@@ -271,5 +271,11 @@ tasksync-api/
 * Desenvolvimento do frontend React
 * Integração completa frontend-backend
 
+### Nota do Projeto
+Esta é a API RESTful do projeto TaskSync, desenvolvida em Flask.
+- 🔗 A interface de frontend (React) que consome esta API pode ser encontrada em: [[link-para-o-repositorio-da-interface](https://github.com/Isabel-Santos/tasksync-interface.git
+)]
+- ▶️ Um vídeo de demonstração da aplicação completa está disponível no README do repositório do frontend.
+
 ## 💡👩‍💻 Autora
 Desenvolvido por Isabel Santos

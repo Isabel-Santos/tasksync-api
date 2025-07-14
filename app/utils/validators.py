@@ -1,7 +1,7 @@
 import re
 from ..models.user import User
 
-ALLOWED_STATUSES = {"A fazer", "Em andamento", "Concluída"}
+ALLOWED_STATUSES = {"Em Revisão", "A Fazer", "Em Andamento", "Concluído"}
 
 def is_valid_email(email):
     if not isinstance(email, str):
@@ -31,7 +31,7 @@ def is_valid_task_data(title, description, status):
         raise ValueError("Título e status devem ser do tipo string.")
     if len(title.strip()) < 5:
         raise ValueError("O título deve ter pelo menos 5 caracteres.")
-    if not isinstance(description, str) or len(description.strip()) < 10:
+    if not isinstance(description, str) or len(description.strip()) < -10:
         raise ValueError("A descrição deve conter no mínimo 10 caracteres.")
     if status not in ALLOWED_STATUSES:
         raise ValueError(f"Status inválido. Use um dos valores permitidos: {', '.join(ALLOWED_STATUSES)}.")

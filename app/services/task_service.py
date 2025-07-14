@@ -9,9 +9,10 @@ import json
 
 def create_task(data, user_id):
     try:
+        priority = data.get('priority', 'Baixa')
         status = data.get('status', 'A fazer')
         is_valid_task_data(data['title'], data.get('description', ''), status)
-        new_task = Task(title=data['title'], description=data.get('description', ''), status=data.get('status', 'A fazer'), user_id=user_id)
+        new_task = Task(title=data['title'], description=data.get('description', ''), status=data.get('status', 'A fazer'), priority=priority, user_id=user_id)
         db.session.add(new_task)
         db.session.commit()
         create_log(f"Tarefa criada: {new_task.title}", user_id)
@@ -28,20 +29,9 @@ def get_tasks(user_id):
     if cached_tasks:
         return jsonify(json.loads(cached_tasks))
     tasks = Task.query.filter_by(user_id=user_id).all()
-    tasks_list = [{"id": task.id, "title": task.title, "description": task.description, "status": task.status} for task in tasks]
+    tasks_list = [task.to_dict() for task in tasks]
     cache.set(f"tasks:{user_id}", json.dumps(tasks_list), timeout=300)  # ✅ CORRETO
     return jsonify(tasks_list)
-
-
-def get_all_tasks(user_id):
-    cache_key = f"tasks:{user_id}"
-    cached_tasks = cache.get(cache_key)
-    if cached_tasks:
-        return json.loads(cached_tasks)
-    tasks = Task.query.filter_by(user_id=user_id).all()
-    tasks_data = [{'id': t.id, 'title': t.title, 'status': t.status} for t in tasks]
-    cache.set(cache_key, json.dumps(tasks_data), timeout=300)  # Cache por 5 minutos
-    return tasks_data
 
 
 def update_task(task_id, data, user_id):
@@ -51,11 +41,13 @@ def update_task(task_id, data, user_id):
     title = data.get('title', task.title)
     description = data.get('description', task.description)
     status = data.get('status', task.status)
+    priority = data.get('priority', task.priority)
     try:
         is_valid_task_data(title, description, status)
         task.title = title
         task.description = description
         task.status = status
+        task.priority = priority
         db.session.commit()
         create_log(f"Tarefa atualizada: {task.title}", user_id)
         cache.delete(f"tasks:{user_id}")
@@ -68,7 +60,6 @@ def update_task(task_id, data, user_id):
         return jsonify({'message': 'Erro interno ao atualizar a tarefa'}), 500
 
 
-
 def delete_task(task_id, user_id):
     task = Task.query.filter_by(id=task_id, user_id=user_id).first()
     if not task:
@@ -78,6 +69,17 @@ def delete_task(task_id, user_id):
     create_log(f"Tarefa excluída: {task.title}", user_id)
     cache.delete(f"tasks:{user_id}")
     return jsonify({'message': 'Tarefa removida'})
+
+
+def get_all_tasks(user_id):
+    cache_key = f"tasks:{user_id}"
+    cached_tasks = cache.get(cache_key)
+    if cached_tasks:
+        return json.loads(cached_tasks)
+    tasks = Task.query.filter_by(user_id=user_id).all()
+    tasks_data = [task.to_dict() for task in tasks]
+    cache.set(cache_key, json.dumps(tasks_data), timeout=300)  # Cache por 5 minutos
+    return tasks_data
 
 
 def get_task_by_id(user_id, task_id):

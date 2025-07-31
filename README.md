@@ -2,6 +2,7 @@
 
 + Esta parte do repositório refere-se exclusivamente à **API RESTful** desenvolvida com **Flask**, incluindo autenticação com **JWT**, segurança avançada, e integração com banco de dados relacional (**PostgreSQL**) e não relacional (**MongoDB**).
 ℹ️ O frontend React ainda está em desenvolvimento. Quando finalizado, terá repositório vinculado ou com link referenciado.
+O vídeo demonstrando as funcionalidades estão no arquivo [Apresentação_SI_1x75_Compactado.mp4](https://github.com/Isabel-Santos/tasksync-api/blob/main/Apresenta%C3%A7%C3%A3o_SI_1x75_Compactado.mp4)
 
 ## 1. Requisitos
 
